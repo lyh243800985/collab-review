@@ -15,7 +15,7 @@ Read [review-sop.md](references/review-sop.md) before reviewing. This is the onl
 2. Build only the minimum context needed to interpret that diff. Use [context-map.md](references/context-map.md).
 3. Inspect the relevant layers and state both coverage and exclusions: requirement and acceptance behavior; UI/Figma; route, state, permission and data flow; shared component/API contracts; backend endpoint or interface contract when the diff depends on one; and scoped static checks. Do not claim an unavailable layer was checked.
 4. Turn observations into falsifiable hypotheses. Use [risk-hypothesis.md](references/risk-hypothesis.md). Reject hypotheses without a diff-to-impact causal chain as non-blocking suggestions.
-5. Run only applicable, non-mutating static checks, following [static-verification.md](references/static-verification.md). Never run a build as part of review. For UI or interaction risks, prepare and run an MCP-first browser verification plan using [ui-evidence.md](references/ui-evidence.md). Expand only to prove a diff-linked impact.
+5. Run only applicable, non-mutating static checks, following [static-verification.md](references/static-verification.md). Never run a build as part of review. For UI or interaction risks, prepare and run a browser verification plan using [ui-evidence.md](references/ui-evidence.md). Prefer the in-app Browser; use the Chrome plugin when verification depends on the user's existing Chrome tabs, login state, or extensions. Expand only to prove a diff-linked impact.
 6. Report every identified item using [report-template.md](references/report-template.md): verified defects first, then unverified diff-linked risks, then verified passes. List optimization suggestions separately for robustness, extensibility, readability, maintainability, and testability. State the validation performed and blocked validation.
 7. End Phase 1 by asking for a decision. Recommend the smallest fix scope, but **do not edit product code, tests, configuration, or external systems** unless the user explicitly approves a specified fix scope.
 
@@ -31,6 +31,8 @@ Read [review-sop.md](references/review-sop.md) before reviewing. This is the onl
 - Do not turn unrelated legacy defects, style preferences, or broad refactors into review risks.
 - Do not invent business rules. Record missing requirements as an open question.
 - Do not claim a UI verification ran unless its actual steps and evidence are available.
-- Prefer purpose-built browser and Figma MCP tools. Do not use the Codex Chrome plugin as the default or fallback in this environment.
+- Prefer the in-app Browser and purpose-built Figma tools. Use the Chrome plugin through its documented Node REPL client when existing Chrome state is required; follow [the local compatibility record](../../docs/chrome-plugin-process-shim-compatibility.md) when initialization behavior must be diagnosed.
+- Treat initial connection, repeated interaction stability, and recovery after interruption as separate verification claims. Do not infer recovery stability from one successful connection.
+- Finalize every Chrome session according to the Chrome skill after collecting evidence. An interrupted session without finalization can leave a tab temporarily unclaimable.
 - Ask for direction before an action that mutates production data or external systems.
 - Treat an interface or backend contract that is absent, undocumented, or unverified as an open question or unverified risk, not permission to infer a frontend implementation.

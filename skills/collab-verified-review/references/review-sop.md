@@ -27,7 +27,10 @@ State the layers inspected and those not inspected. Consider the relevant subset
 
 - Do not run build or compilation commands as a review check.
 - Do not run a command with automatic fix behavior unless the user explicitly requests mutations.
-- Prefer browser MCP for page verification and Figma MCP for design-source inspection. The Codex Chrome plugin is not an approved fallback for this workflow.
+- Prefer the in-app Browser for isolated page verification and a purpose-built Figma tool for design-source inspection.
+- Use the Chrome plugin when the hypothesis requires the user's existing Chrome tab, authenticated profile, or installed extensions. Follow the Chrome skill's Node REPL workflow, name the session, claim only a tab returned by `openTabs()`, and finalize the session after evidence collection.
+- If Chrome initialization fails, classify the UI run as blocked before changing plugin files. Plugin-cache compatibility edits require explicit user approval and must follow [the recorded process-shim compatibility procedure](../../../docs/chrome-plugin-process-shim-compatibility.md).
+- Report first connection, repeated DOM/screenshot operations, and interruption recovery independently. A successful initial connection does not prove recovery behavior.
 
 ## Priority
 
