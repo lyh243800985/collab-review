@@ -1,0 +1,4 @@
+interface:
+  display_name: "Collab · Static Verification"
+  short_description: "Run scoped static project verification checks"
+  default_prompt: "Run and interpret static verification for this diff."

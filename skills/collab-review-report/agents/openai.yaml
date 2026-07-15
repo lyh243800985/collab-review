@@ -1,0 +1,4 @@
+interface:
+  display_name: "Collab · Review Report"
+  short_description: "Report evidence-based findings from diff review"
+  default_prompt: "Write an evidence-based diff review report."

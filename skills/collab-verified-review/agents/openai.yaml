@@ -1,0 +1,4 @@
+interface:
+  display_name: "Collab · Verified Review"
+  short_description: "Run evidence-driven diff review"
+  default_prompt: "Review this change with evidence-driven validation."

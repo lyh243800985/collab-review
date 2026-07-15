@@ -1,0 +1,4 @@
+interface:
+  display_name: "Collab · Review Context"
+  short_description: "Build minimal context for diff reviews"
+  default_prompt: "Build minimal context for this diff review."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Collab · Risk Hypotheses"
+  short_description: "Turn diff risks into testable hypotheses"
+  default_prompt: "Create testable risk hypotheses for this diff."

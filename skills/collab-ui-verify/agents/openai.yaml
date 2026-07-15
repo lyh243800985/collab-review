@@ -1,0 +1,4 @@
+interface:
+  display_name: "Collab · UI Evidence Verify"
+  short_description: "Reproduce UI risks and retain review evidence"
+  default_prompt: "Verify this UI risk in the running application."
