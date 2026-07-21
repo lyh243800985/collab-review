@@ -1,0 +1,9 @@
+{
+  "component": "TMWD CDP Bridge Chrome Extension",
+  "extensionVersion": "1.2.1",
+  "mcpPackage": "cdp-bridge",
+  "mcpVersion": "0.2.0",
+  "repository": "https://github.com/Unagi-cq/cdp-bridge-mcp",
+  "license": "MIT",
+  "distributionNote": "Bundled unchanged from the cdp-bridge 0.2.0 package source."
+}

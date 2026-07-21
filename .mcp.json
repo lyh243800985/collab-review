@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "figma": {
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp@0.13.2", "--stdio"]
+    },
+    "cdp-bridge": {
+      "command": "uvx",
+      "args": ["cdp-bridge@0.2.0"]
+    },
+    "cwui-knowledge": {
+      "command": "npx",
+      "args": ["-y", "--registry=http://npm.cwbk.com:7001", "@canway/cwui-knowledge@0.1.0"]
+    }
+  }
+}

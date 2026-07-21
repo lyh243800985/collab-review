@@ -1,0 +1,38 @@
+{
+  "scope": {
+    "base": "origin/main",
+    "head": "HEAD",
+    "routes": ["/ip-address"]
+  },
+  "checks": [
+    {
+      "type": "static",
+      "command": "eslint changed-file.vue",
+      "result": "passed"
+    }
+  ],
+  "findings": [
+    {
+      "id": "R-001",
+      "class": "verified_defect",
+      "priority": "P2",
+      "surface": "ui",
+      "changedLocation": "src/views/ip-address/index.vue:120",
+      "causalChain": "The diff leaves the action enabled when selection count is zero, exposing an invalid request path.",
+      "trigger": "Open the non-leaf group and click Merge without selecting a subnet.",
+      "expected": "The action is disabled for zero or one selected subnet.",
+      "actual": "The action remains enabled and sends a request.",
+      "impact": "Users can trigger an invalid merge request.",
+      "evidence": [
+        {
+          "type": "screenshot",
+          "path": "evidence/merge-action-enabled.png"
+        },
+        {
+          "type": "network",
+          "summary": "The click produced an HTTP 405 response."
+        }
+      ]
+    }
+  ]
+}

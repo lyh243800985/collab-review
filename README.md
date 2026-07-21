@@ -1,63 +1,62 @@
 # Collab Verified Review
 
-面向 `auto-ops` 前端的、以证据为依据的代码 diff review 技能。它不止阅读 diff：先建立与变更直接相关的最小上下文，再把风险变成可验证的假设，并尽量用静态检查、接口证据和真实页面操作确认结论。
+面向 `auto-ops` 前端的 Codex 代码审查专家插件。它把需求事实、Figma、代码 diff、项目契约和真实浏览器行为放进同一条证据链，主动验证疑似缺陷，而不是只做静态评论。
 
-## 使用入口
+## 使用
 
-对外只暴露一个技能：`collab-verified-review`。
-
-```text
-$collab-verified-review <需求/单据/页面链接/待审 diff>
-```
-
-例如：
+推荐从总控 Skill `collab-verified-review` 开始。插件同时保留 5 个职责明确的内部专家 Skill，供总控编排，也可在需要时单独调用。
 
 ```text
 $collab-verified-review
-需求：p176_6942 网段搜索展示所属分组层级
-页面：http://dev.test.com:8082/#/ip-address
+需求：<CTeam 链接或文字>
+Figma：<目标节点链接>
+页面：<测试环境 URL>
 请 review 当前分支相对基线的 diff。
 ```
 
-`skills/` 下的其他内容是入口技能调用的内部 playbook，不需要、也不应单独安装为用户可调用技能。
+第一阶段只识别、验证和报告，不改业务代码；用户明确批准具体问题后，第二阶段才执行最小修复与回归。
 
-## 审查原则
+## 内置能力
 
-- 只审 diff 引入、改变或直接暴露的风险；其他文件或页面只能用于证明影响链。
-- 没有“变更 → 影响”因果链的问题，列为建议，不阻塞本次 review。
-- 风险结论必须尽量附带证据：命令结果、接口契约、浏览器操作、截图或网络记录。
-- 不把代码风格建议与功能、数据、安全或交互缺陷混在一起。
-- 不凭空推断业务规则；缺失的接口契约或产品语义应作为开放问题说明。
+- CTeam：读取字段、Markdown 正文和内嵌图片。
+- Figma MCP：读取目标节点、尺寸、样式和状态。
+- CDP Bridge MCP：复用已登录 Chrome，按明确 `tab_id` 验证页面、网络与交互。
+- CWUI Knowledge MCP：核对 `@canway/cw-magic-vue` 组件契约和 CW UI/UX 规范。
+- 确定性脚本：环境诊断、报告证据门禁、可移植性检查和发布打包。
 
-## 两阶段 SOP
+## 首次配置
 
-1. **识别与报告**：读取需求和 diff，构建最小上下文，形成可证伪的风险假设，并运行非修改性的检查与页面验证。此阶段不修改业务代码。
-2. **最小修复与回归**：仅在用户明确批准具体范围后修改代码，并执行与变更相称的回归验证。
+1. 安装插件并重新加载 Codex。
+2. 在 Chrome 打开 `chrome://extensions/`，开启开发者模式，加载插件内的 `assets/cdp-bridge-extension/`。
+3. 按本机方式完成 Figma 授权。
+4. CTeam 凭证保存在当前工作区 `.ops-local/`，不得写入插件目录。
+5. 运行：
 
-审查输出按以下类别排序：已验证缺陷、未验证但与 diff 相关的风险、已验证通过项，以及不阻塞的优化建议。
-
-## 页面验证策略
-
-页面验证按以下优先级选择工具，以复用用户现有登录态：
-
-1. Chrome DevTools：连接已登录的 Chrome，优先用于已有页面、SSO 会话和真实交互。
-2. CDP Bridge：在需要复用统一门户会话时作为连接路径。
-3. Playwright：前两者不可用时才启用独立浏览器；遇到统一门户登录时由用户手动完成登录。
-
-每次页面验证记录连接方式、环境、账号/角色、前置数据、操作步骤、预期与实际结果；不能连通或缺少测试数据时，明确标记为 blocked，不能据此宣称验证通过。
-
-## 安装
-
-将 `skills/collab-verified-review` 链接或复制到 `$CODEX_HOME/skills/collab-verified-review`，然后重新打开 Codex 会话。在 `/` 菜单中只应看到一个 **Verified Review** 入口。
-
-## 仓库结构
-
-```text
-skills/
-  collab-verified-review/       # 唯一用户入口
-    SKILL.md
-    references/                 # SOP、上下文、风险、静态验证、UI 证据和报告模板
-docs/                           # 工具兼容性与运行记录
+```powershell
+py -3 scripts/doctor.py --require-connected
 ```
 
-当前版本只适配 `auto-ops`，并非多项目通用 review 框架。
+## 结构
+
+```text
+.codex-plugin/plugin.json       # 插件清单
+.mcp.json                       # Figma、CDP Bridge、CWUI MCP
+skills/collab-verified-review/  # 总控入口与共享 playbook
+skills/collab-review-context/   # 最小上下文专家
+skills/collab-review-hypothesis/# 风险假设专家
+skills/collab-static-verify/    # 静态验证专家
+skills/collab-ui-verify/        # 页面实证专家
+skills/collab-review-report/    # 报告汇总专家
+assets/cdp-bridge-extension/    # 配套 Chrome 扩展
+assets/review-report-template.md
+scripts/                        # doctor、证据校验、打包与可移植性检查
+```
+
+## 发布
+
+```powershell
+py -3 scripts/check_portability.py
+py -3 scripts/package_plugin.py
+```
+
+生成的 ZIP 不包含凭证、虚拟环境、历史报告或测试现场。

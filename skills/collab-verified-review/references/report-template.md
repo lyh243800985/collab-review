@@ -1,5 +1,13 @@
 # Verified Diff Review Report
 
+先按 `assets/example-review.json` 的结构保存机器可读 findings，再执行：
+
+```powershell
+py -3 <plugin-root>/scripts/validate_review.py <report.json>
+```
+
+只有校验通过后，才能将 `verified_defect` 呈现在人类可读报告中。UI、UX、Figma 或浏览器问题必须包含运行态或视觉证据；未完成验证的内容放入 `unverified_risk`。
+
 ```markdown
 # Review: <change>
 

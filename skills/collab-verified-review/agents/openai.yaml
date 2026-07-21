@@ -1,4 +1,4 @@
 interface:
-  display_name: "Collab · Verified Review"
-  short_description: "Run evidence-driven diff review"
-  default_prompt: "Review this change with evidence-driven validation."
+  display_name: "验证式代码审查"
+  short_description: "基于需求、Figma、diff 和真实页面证据审查前端变更"
+  default_prompt: "请读取需求、Figma、页面和当前 diff，验证疑似缺陷并输出带证据的审查报告。"

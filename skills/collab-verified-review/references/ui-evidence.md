@@ -1,17 +1,34 @@
-# UI Evidence
+# Browser and UI Evidence
 
-Verify one diff-linked hypothesis through the running application. Prefer the in-app Browser for an isolated session. Use the Chrome plugin when the hypothesis depends on existing Chrome tabs, login state, profile data, or extensions. Use a purpose-built Figma tool for supplied Figma URLs or nodes.
+Use runtime evidence to falsify a concrete, diff-linked hypothesis. The default browser path is the bundled CDP Bridge because it reuses the user's authenticated Chrome state and addresses tabs explicitly.
 
-Confirm route, role, test data, and environment first. State which browser surface was selected and why. If the selected surface cannot access the page or authenticated session, record the blocker; do not silently switch browser mechanisms or edit plugin files. Do not mutate production data without explicit authorization. Exercise the smallest relevant interaction state, capture screenshots for visible failures, and retain console/network/trace evidence when exposed by the selected surface. A blocked run never confirms a defect.
+## Fast path
 
-For Chrome, follow the installed Chrome skill and its Node REPL API. Name the session before opening or claiming tabs, claim only an exact item returned by `openTabs()`, reuse the claimed tab, and call `tabs.finalize(...)` as the final Chrome action. If initialization reports a process-shim conflict, consult [the local compatibility record](../../../docs/chrome-plugin-process-shim-compatibility.md); any plugin-cache edit requires explicit approval. Record normal operation and recovery-after-interruption as separate results.
+1. Confirm route, role, test data, viewport, and the exact expected state.
+2. Run `scripts/doctor.py` only when the bridge is unavailable or setup is uncertain.
+3. Create a named Chrome tab group for the review and create one inactive tab per independent route or state chain.
+4. Bind every command to an explicit `tab_id`. Different tabs may run in parallel; interactions within one tab remain serial.
+5. Wait for the exact business control to be visible and interactable. Do not use broad loading selectors or high-frequency polling.
+6. Exercise the smallest relevant interaction. Avoid final submit, delete, publish, reservation, or other data-changing actions unless explicitly authorized and isolated.
+7. Capture the post-action DOM state and, when relevant, screenshot, console, and network evidence.
+8. Close disposable tabs or rename the group to indicate completion when the user wants to inspect the scene.
+
+## Evidence rules
+
+- A screenshot proves visible state; it does not prove request success, authorization, or persistence.
+- A click ACK proves command delivery, not business success. Verify the resulting DOM, request, download, navigation, toast, or data state.
+- An ACK timeout is an unknown outcome. Inspect side effects before retrying so a real action is not executed twice.
+- A blocked run never confirms a defect. Record the blocker and the next smallest verification action.
+- Tool or connection failures are reported separately from product failures.
+- Do not silently switch to another tab, role, route, browser surface, or test fixture.
+
+Use Chrome DevTools MCP only when the hypothesis needs low-level protocol evidence unavailable through CDP Bridge. Use an isolated Playwright/browser session only as a last resort when authenticated Chrome state is unnecessary.
 
 ```yaml
 hypothesis: R-01
 environment: <local/test URL>
-tool: <in-app Browser | Chrome plugin | other approved browser surface>
-selection_reason: <why this surface is required>
-figma_reference: <MCP frame/node reference or not-applicable>
+tab_id: <explicit Chrome tab id>
+figma_reference: <file/node reference or not-applicable>
 account_or_role: <authorized test role>
 preconditions: <test data and state>
 steps: [<action>]
@@ -20,13 +37,8 @@ actual: <behavior>
 result: reproduced | not-reproduced | blocked
 evidence:
   screenshot: <path or none>
-  trace_or_har: <path or none>
   console: <message or none>
   network: <request/result metadata or none>
-scope: <why these pages establish diff impact>
-connection:
-  initial: passed | failed | not-applicable
-  repeated_operations: passed | failed | not-applicable
-  interruption_recovery: passed | failed | not-tested
-  finalized: true | false | not-applicable
+  dom: <selector/state/value or none>
+scope: <why this route and state establish diff impact>
 ```
