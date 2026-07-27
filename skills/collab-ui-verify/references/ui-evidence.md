@@ -2,6 +2,7 @@
 
 ```yaml
 hypothesis: R-01
+reachability_plan: <plan id or path>
 environment: <local/test URL>
 tab_id: <explicit Chrome tab id>
 figma_reference: <MCP frame/node reference or not-applicable>
@@ -18,4 +19,9 @@ evidence:
   network: <request/result metadata or none>
   dom: <selector/state/value or none>
 scope: <why these pages establish diff impact>
+timing:
+  readiness_probe_ms: <milliseconds>
+  interaction_ms: <milliseconds>
+  total_ms: <milliseconds>
+stop_condition_triggered: <condition or none>
 ```

@@ -1,6 +1,6 @@
 {
   "name": "collab-verified-review",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Evidence-driven frontend diff review grounded in requirements, Figma, repository contracts, and real browser behavior.",
   "author": { "name": "CW Frontend Team" },
   "repository": "https://github.com/lyh243800985/collab-review",
@@ -10,10 +10,10 @@
   "interface": {
     "displayName": "Collab Verified Review",
     "shortDescription": "基于需求、Figma、diff 与真实页面证据执行前端代码审查。",
-    "longDescription": "读取 CTeam 需求与图片、Figma 设计和代码 diff，结合项目契约、静态检查与已登录 Chrome 的真实交互，将疑似风险验证为缺陷、通过项或明确阻塞，并在批准后执行最小修复和回归。",
+    "longDescription": "读取 CTeam 需求与图片、Know All Agent 项目认知、Figma 设计和代码 diff，结合项目契约、静态检查与已登录 Chrome 的真实交互，将疑似风险验证为缺陷、通过项或明确阻塞，并在批准后执行最小修复和回归。",
     "developerName": "CW Frontend Team",
     "category": "Developer Tools",
-    "capabilities": ["CTeam requirement reading", "Figma inspection", "Diff review", "Browser verification", "Evidence reports"],
+    "capabilities": ["CTeam requirement reading", "Project knowledge recall", "Figma inspection", "Diff review", "State reachability planning", "Browser verification", "Evidence reports"],
     "defaultPrompt": [
       "根据需求、Figma、页面链接和当前 diff 执行验证式代码审查。",
       "审查这个前端变更，并在真实页面验证疑似缺陷。",

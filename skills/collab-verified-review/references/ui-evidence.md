@@ -4,14 +4,16 @@ Use runtime evidence to falsify a concrete, diff-linked hypothesis. The default 
 
 ## Fast path
 
-1. Confirm route, role, test data, viewport, and the exact expected state.
+1. Require a `collab-review-reachability` plan containing the full URL, target state, fixture identity, evidence, budget, and stop conditions. Normal interaction requires `readiness: ready`.
 2. Run `scripts/doctor.py` only when the bridge is unavailable or setup is uncertain.
 3. Create a named Chrome tab group for the review and create one inactive tab per independent route or state chain.
 4. Bind every command to an explicit `tab_id`. Different tabs may run in parallel; interactions within one tab remain serial.
-5. Wait for the exact business control to be visible and interactable. Do not use broad loading selectors or high-frequency polling.
-6. Exercise the smallest relevant interaction. Avoid final submit, delete, publish, reservation, or other data-changing actions unless explicitly authorized and isolated.
-7. Capture the post-action DOM state and, when relevant, screenshot, console, and network evidence.
-8. Close disposable tabs or rename the group to indicate completion when the user wants to inspect the scene.
+5. In the first probe, batch the exact business control, required data count, runtime flags, permission state, and visible interface errors. Default exact waits to 5 seconds.
+6. If a planned stop condition is present, return `blocked` immediately. Do not explore other records or routes.
+7. Exercise the smallest relevant interaction within the route budget, normally 120 seconds.
+8. Capture the post-action DOM state and, when relevant, screenshot, console, and network evidence.
+9. Compare the conclusion against DOM and screenshot facts before returning.
+10. Close disposable tabs or rename the group to indicate completion when the user wants to inspect the scene.
 
 ## Evidence rules
 
@@ -26,6 +28,7 @@ Use Chrome DevTools MCP only when the hypothesis needs low-level protocol eviden
 
 ```yaml
 hypothesis: R-01
+reachability_plan: <plan id or path>
 environment: <local/test URL>
 tab_id: <explicit Chrome tab id>
 figma_reference: <file/node reference or not-applicable>
@@ -41,4 +44,9 @@ evidence:
   network: <request/result metadata or none>
   dom: <selector/state/value or none>
 scope: <why this route and state establish diff impact>
+timing:
+  readiness_probe_ms: <milliseconds>
+  interaction_ms: <milliseconds>
+  total_ms: <milliseconds>
+stop_condition_triggered: <condition or none>
 ```

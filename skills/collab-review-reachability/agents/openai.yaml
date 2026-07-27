@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review State Reachability"
+  short_description: "从代码推导目标状态、测试数据与最短浏览器路径"
+  default_prompt: "Use $collab-review-reachability to derive the data conditions and shortest safe browser path for this review hypothesis."

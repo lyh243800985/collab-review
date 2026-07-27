@@ -12,5 +12,7 @@ expected: <correct behavior>
 suspected_actual: <failure to prove or disprove>
 verification: <command or browser steps>
 minimum_impact_scope: <changed page and required representative consumer>
+knowledge_relation: current | superseded | proposal | legacy | none
+knowledge_sources: []
 if_unverified: <blocker and next action>
 ```

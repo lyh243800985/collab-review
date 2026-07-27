@@ -4,6 +4,19 @@
     "head": "HEAD",
     "routes": ["/ip-address"]
   },
+  "projectKnowledge": {
+    "provider": "know-all-agent",
+    "status": "used",
+    "mode": "recall",
+    "projectId": "auto-ops",
+    "projectRevision": "abc1234",
+    "reviewedRevision": "abc1234",
+    "historicalCompatibility": "verified",
+    "currentRules": [],
+    "supersededRules": [],
+    "sources": ["knowledge/projects/auto-ops/events/example.json"],
+    "unresolved": []
+  },
   "checks": [
     {
       "type": "static",

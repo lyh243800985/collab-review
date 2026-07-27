@@ -18,15 +18,118 @@ import validate_review
 
 
 class PluginScriptsTest(unittest.TestCase):
+    @staticmethod
+    def project_knowledge(**overrides):
+        payload = {
+            "provider": "know-all-agent",
+            "status": "used",
+            "mode": "recall",
+            "projectId": "auto-ops",
+            "projectRevision": "abc1234",
+            "reviewedRevision": "abc1234",
+            "historicalCompatibility": "verified",
+            "currentRules": [],
+            "supersededRules": [],
+            "sources": ["knowledge/projects/auto-ops/events/example.json"],
+            "unresolved": [],
+        }
+        payload.update(overrides)
+        return payload
+
     def test_example_review_passes_evidence_gate(self):
         payload = json.loads((ROOT / "assets" / "example-review.json").read_text(encoding="utf-8"))
         self.assertEqual(validate_review.validate(payload), [])
 
     def test_verified_defect_requires_attribution_and_evidence(self):
-        payload = {"scope": {}, "checks": [], "findings": [{"class": "verified_defect", "surface": "ui"}]}
+        payload = {
+            "scope": {},
+            "projectKnowledge": self.project_knowledge(),
+            "checks": [],
+            "findings": [{"class": "verified_defect", "surface": "ui"}],
+        }
         errors = validate_review.validate(payload)
         self.assertTrue(any("changedLocation" in error for error in errors))
         self.assertTrue(any("evidence" in error for error in errors))
+
+    def test_browser_check_requires_reachability_plan(self):
+        payload = {
+            "scope": {},
+            "projectKnowledge": self.project_knowledge(),
+            "checks": [{"type": "browser", "result": "blocked"}],
+            "findings": [],
+        }
+        errors = validate_review.validate(payload)
+        self.assertIn("checks[0].reachabilityPlan is required for browser checks", errors)
+
+    def test_ready_browser_check_requires_executable_plan(self):
+        payload = {
+            "scope": {},
+            "projectKnowledge": self.project_knowledge(),
+            "checks": [
+                {
+                    "type": "browser",
+                    "result": "passed",
+                    "reachabilityPlan": {
+                        "hypothesis": "R-01",
+                        "readiness": "ready",
+                        "target": "Sync button",
+                        "browserPlan": {
+                            "url": "http://test.example/#/detail/1",
+                            "expected": "The button is visible",
+                            "stopConditions": ["runtime flag is false"],
+                        },
+                    },
+                }
+            ],
+            "findings": [],
+        }
+        self.assertEqual(validate_review.validate(payload), [])
+
+    def test_project_knowledge_is_required(self):
+        payload = {"scope": {}, "checks": [], "findings": []}
+        self.assertIn(
+            "projectKnowledge must be an object",
+            validate_review.validate(payload),
+        )
+
+    def test_unavailable_project_knowledge_keeps_history_unverified(self):
+        payload = {
+            "scope": {},
+            "projectKnowledge": self.project_knowledge(
+                status="unavailable",
+                historicalCompatibility="unverified",
+                reason="Know All Agent is not installed",
+            ),
+            "checks": [],
+            "findings": [],
+        }
+        self.assertEqual(validate_review.validate(payload), [])
+
+    def test_requirement_review_requires_task_id(self):
+        payload = {
+            "scope": {},
+            "projectKnowledge": self.project_knowledge(mode="requirement_review"),
+            "checks": [],
+            "findings": [],
+        }
+        self.assertIn(
+            "projectKnowledge.taskId is required for requirement_review mode",
+            validate_review.validate(payload),
+        )
+
+    def test_project_knowledge_revision_must_match_review(self):
+        payload = {
+            "scope": {},
+            "projectKnowledge": self.project_knowledge(
+                projectRevision="old-revision"
+            ),
+            "checks": [],
+            "findings": [],
+        }
+        self.assertIn(
+            "projectKnowledge.projectRevision must match reviewedRevision",
+            validate_review.validate(payload),
+        )
 
     def test_distributable_files_are_portable(self):
         self.assertEqual(check_portability.scan(ROOT), [])
@@ -54,6 +157,7 @@ class PluginScriptsTest(unittest.TestCase):
                     "collab-verified-review/skills/collab-verified-review/SKILL.md",
                     "collab-verified-review/skills/collab-review-context/SKILL.md",
                     "collab-verified-review/skills/collab-review-hypothesis/SKILL.md",
+                    "collab-verified-review/skills/collab-review-reachability/SKILL.md",
                     "collab-verified-review/skills/collab-static-verify/SKILL.md",
                     "collab-verified-review/skills/collab-ui-verify/SKILL.md",
                     "collab-verified-review/skills/collab-review-report/SKILL.md",
@@ -61,6 +165,35 @@ class PluginScriptsTest(unittest.TestCase):
             )
             self.assertIn("collab-verified-review/assets/cdp-bridge-extension/manifest.json", members)
             self.assertIn("collab-verified-review/skills/collab-verified-review/scripts/fetch_issue.js", members)
+            self.assertIn(
+                "collab-verified-review/skills/collab-verified-review/references/"
+                "project-knowledge-integration.md",
+                members,
+            )
+
+    def test_orchestrator_explicitly_invokes_know_all_agent(self):
+        orchestrator = (
+            ROOT / "skills" / "collab-verified-review" / "SKILL.md"
+        ).read_text(encoding="utf-8")
+        integration = (
+            ROOT
+            / "skills"
+            / "collab-verified-review"
+            / "references"
+            / "project-knowledge-integration.md"
+        ).read_text(encoding="utf-8")
+
+        for tool_name in (
+            "review_requirement",
+            "recall_project_knowledge",
+            "add_investigation_evidence",
+            "complete_requirement_review",
+        ):
+            self.assertIn(tool_name, f"{orchestrator}\n{integration}")
+        self.assertIn(
+            "Do not call Know All Agent's `verify-project-change`",
+            integration,
+        )
 
 
 if __name__ == "__main__":

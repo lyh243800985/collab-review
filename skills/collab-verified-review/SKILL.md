@@ -12,14 +12,16 @@ description: 基于需求、CTeam 单据、Figma、代码 diff、项目契约和
 1. 读取 [review-sop.md](references/review-sop.md)。
 2. 输入含 CTeam/CW 单据链接时，读取 [requirements-evidence.md](references/requirements-evidence.md)，运行本 Skill 的读单脚本，并实际查看影响判断的正文图片。
 3. 输入含 Figma 时，读取 [figma-evidence.md](references/figma-evidence.md)，使用插件声明的 Figma MCP 获取相关节点和状态。
-4. 建立最小代码上下文时读取 [context-map.md](references/context-map.md)。
-5. 页面或交互风险出现时读取 [ui-evidence.md](references/ui-evidence.md)；首次使用、CDP 不可用或标签页为空时读取 [cdp-setup.md](references/cdp-setup.md)，并运行插件根目录的 `scripts/doctor.py`。
-6. 生成结论前读取 [risk-hypothesis.md](references/risk-hypothesis.md)、[static-verification.md](references/static-verification.md) 和 [report-template.md](references/report-template.md)。
+4. 需求事实和审查 revision 明确后，读取 [project-knowledge-integration.md](references/project-knowledge-integration.md)，显式调用 Know All Agent 的 `review_requirement` 或 `recall_project_knowledge`，再建立代码上下文。
+5. 建立最小代码上下文时读取 [context-map.md](references/context-map.md)。
+6. 页面或交互风险出现时，先调用 `collab-review-reachability` 从代码推导目标状态、数据画像和最短路径，再读取 [ui-evidence.md](references/ui-evidence.md)；首次使用、CDP 不可用或标签页为空时读取 [cdp-setup.md](references/cdp-setup.md)，并运行插件根目录的 `scripts/doctor.py`。
+7. 生成结论前读取 [risk-hypothesis.md](references/risk-hypothesis.md)、[static-verification.md](references/static-verification.md) 和 [report-template.md](references/report-template.md)。
 
 ## 内部专家编排
 
 - `collab-review-context`：建立最小代码与契约上下文。
 - `collab-review-hypothesis`：把疑点转成可证伪假设。
+- `collab-review-reachability`：从代码反推状态出现条件、测试数据与浏览器路径。
 - `collab-static-verify`：执行非修改性的定向检查。
 - `collab-ui-verify`：通过 Figma 与真实页面验证行为。
 - `collab-review-report`：按证据等级汇总结论。
@@ -30,13 +32,16 @@ description: 基于需求、CTeam 单据、Figma、代码 diff、项目契约和
 
 1. 明确 diff/base、变更文件、需求目标、页面路由和本次排除项。
 2. 从需求字段、正文、图片、Figma 和仓库契约建立事实集；来源不可互相冒充。
-3. 只读取解释 diff 所需的路由、组件、状态、权限、接口和代表性消费者。
-4. 将疑点写成可证伪假设。没有“changed location → 触发条件 → 可观察影响”因果链的内容降为建议。
-5. 执行非修改性的定向静态检查。禁止运行 build，也禁止运行带 `--fix` 的检查。
-6. 对功能、UI、UX、接口或关联页面风险，在真实页面复现最小触发链；优先复用已登录 Chrome，并保留 DOM、截图、控制台或网络证据。
-7. 输出已验证缺陷、未验证的 diff 风险、已验证通过、开放问题与范围外建议。说明检查过和未检查的层。
-8. 同步生成机器可读 JSON，并运行插件根目录 `scripts/validate_review.py <report.json>`。门禁未通过时只能修正分类或补证据，不能绕过校验发布结论。
-9. 给出最小修复范围并等待用户明确批准。Phase 1 不修改业务代码、测试、配置或外部系统。
+3. 在大范围代码搜索前显式调用 Know All Agent：有需求时调用 `review_requirement` 并保留 `task_id`；只有 diff 时调用 `recall_project_knowledge`。工具不可用时继续审查，但历史兼容性必须标为未验证。
+4. 区分 `current`、`superseded`、`proposal` 和 `legacy` 认知；当前规则优先于旧需求和旧代码。
+5. 只读取解释 diff 所需的路由、组件、状态、权限、接口和代表性消费者。
+6. 将疑点写成可证伪假设。没有“changed location → 触发条件 → 可观察影响”因果链的内容降为建议。
+7. 执行非修改性的定向静态检查。禁止运行 build，也禁止运行带 `--fix` 的检查。
+8. 对需要页面证据的假设，沿代码追踪模板条件、派生状态、权限、配置、接口字段和交互前置条件，生成状态可达性计划。没有 `ready` 计划时不得启动普通浏览器交互；`probe` 只允许一次有界只读探测。
+9. 对 `ready` 的功能、UI、UX、接口或关联页面风险，在真实页面复现最小触发链；优先复用已登录 Chrome，并保留 DOM、截图、控制台或网络证据。
+10. 输出已验证缺陷、未验证的 diff 风险、已验证通过、开放问题与范围外建议。说明检查过和未检查的层。
+11. 同步生成机器可读 JSON，并运行插件根目录 `scripts/validate_review.py <report.json>`。门禁未通过时只能修正分类或补证据，不能绕过校验发布结论。
+12. 有 `task_id` 时回写关键证据，并在报告门禁通过后调用 `complete_requirement_review`。随后给出最小修复范围并等待用户明确批准。Phase 1 不修改业务代码、测试、配置或外部系统。
 
 ## Phase 2：最小修复与回归
 
@@ -54,5 +59,8 @@ description: 基于需求、CTeam 单据、Figma、代码 diff、项目契约和
 - 缺少接口字段、业务规则或设计说明时标记开放问题，不替产品或后端做决定。
 - 浏览器连通、交互稳定和中断恢复是不同结论，不能以一次连接成功概括全部稳定性。
 - 未真实执行的页面路径不能写成“通过”或“已复现”。
+- Know All Agent 不可用或 revision 不一致时，不得声称已验证历史兼容性。
+- 不调用 Know All Agent 的 `verify-project-change` 总控 Skill，避免重复执行静态和浏览器验证。
+- 浏览器验证不得承担业务路径探索。缺少完整 URL、目标状态、数据画像、证据要求或停止条件时，先返回状态可达性阶段补全计划。
 - 不执行会改变测试或生产数据的最终提交动作，除非用户明确授权并具备可恢复数据。
 - 只对批准项改代码；Code Review 的批准不等于授权全量重构。

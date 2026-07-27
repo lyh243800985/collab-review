@@ -17,4 +17,7 @@ Do not assign P0–P2 to an unverified hypothesis or an unrelated pre-existing p
 
 ## Completion standard
 
-State which checks and pages were actually run, what was not run, and why. Close with open questions that need human product or architecture decisions.
+State which project knowledge was recalled, which checks and pages were actually run, what was not
+run, and why. When Know All Agent was unavailable, mark historical compatibility unverified instead
+of treating code as the rule. Close with open questions that need human product or architecture
+decisions.

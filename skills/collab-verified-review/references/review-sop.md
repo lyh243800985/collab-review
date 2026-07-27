@@ -21,7 +21,11 @@ A risk item must have a changed location and a causal chain from the diff to the
 
 Record the command or browser steps, environment, expected and actual result, and an artifact or log reference where available. Screenshots alone establish visual state, not request or permission behavior.
 
-State the layers inspected and those not inspected. Consider the relevant subset of: requirement and acceptance rules, route/state/permission flow, UI/Figma, shared component contracts, API/backend contracts, static analysis, and runtime interaction. An uninspected layer is not a pass.
+State the layers inspected and those not inspected. Consider the relevant subset of: requirement and acceptance rules, current and superseded project knowledge, route/state/permission flow, UI/Figma, shared component contracts, API/backend contracts, static analysis, and runtime interaction. An uninspected layer is not a pass.
+
+At the Code Review gate, invoke Know All Agent explicitly. A requirement-backed review uses
+`review_requirement`; a diff-only review uses `recall_project_knowledge`. If project knowledge is
+unavailable, continue the diff review but classify historical compatibility as unverified.
 
 ## Execution constraints
 

@@ -4,6 +4,7 @@
 
 - Diff/base: {{diff_base}}
 - Requirement evidence: {{requirement_evidence}}
+- Project knowledge: {{project_knowledge}}
 - Figma evidence: {{figma_evidence}}
 - Runtime environment: {{runtime_environment}}
 - Layers inspected: {{layers_inspected}}
